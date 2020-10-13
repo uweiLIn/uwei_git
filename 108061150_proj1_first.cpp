@@ -144,32 +144,39 @@ void line_check(int m, int n, int** &target) {
             } 
         }
         row++;
-    } 
-        
+    }        
+}
+
+void move(int shift, int m, int n, int refpt, int** &target, int** addmatrix) {
+    for (int i = 0; i < m - 1; i++) {
+        if ((target[i + 1][refpt - 1] || target[i + 1][refpt] || target[i + 1][refpt + 1] || 
+            target[i + 1][refpt + 2]) == 1) {
+                
+            }
+    }
+
+
 }
 
 int main(int argc, char* argv[]) {
-    int refer;
+    int refpt;
     int shiftv;
     char command[20];
+    int m, n;
     ifstream infile(argv[1]);     
     if (!infile) {
         cout << "Can not open file!\n";
         return 1;
     }
-    for(int i = 0; command[i] != '\n' || i < 20; i++) {
+    
+    while () {
+        for(int i = 0; command[i] != '\n' || i < 20; i++) {
+            command[i] = getchar();
+        }
+        typeMatrix(command);
+
         
     }
-    while ()
-    {
-       
-    }
-    
-   /*
-
-   決定堆方塊的二維矩陣方塊大小
-   target[m][n];
-   
-   */
+  
    return 0;
 }
