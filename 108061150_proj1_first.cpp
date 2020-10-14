@@ -120,7 +120,7 @@ int** typeMatrix(char *a) {
        sign[3][0] = 1;
        sign[3][1] = 1;
    }
-   return *sign; // bug 
+   return &sign; // bug 
 }
 
 void line_check(int m, int n, int** &target) {
@@ -149,8 +149,10 @@ void line_check(int m, int n, int** &target) {
 
 void move(int shift, int m, int n, int refpt, int** &target, int** addmatrix) {
     for (int i = 0; i < m - 1; i++) {
-        if ((target[i + 1][refpt - 1] || target[i + 1][refpt] || target[i + 1][refpt + 1] || 
-            target[i + 1][refpt + 2]) == 1) {           // exist bug here
+        if (( (target[i + 1][refpt - 1] && addmatrix[3][0])|| 
+            (target[i + 1][refpt] && addmatrix[3][1])|| 
+            (target[i + 1][refpt + 1] && addmatrix[3][2])|| 
+            (target[i + 1][refpt + 2] && addmatrix[3][3]) )== 1) {           // exist bug here. Dealing with when to stop.
                    
                 for (int k = 0; k < 4; k++) {
                     for (int j = 0; j < 4; j++) {
@@ -158,6 +160,7 @@ void move(int shift, int m, int n, int refpt, int** &target, int** addmatrix) {
                     }
                 }
             }
+        
     }
 }
 
