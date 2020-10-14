@@ -3,7 +3,6 @@
 using namespace std;
 
 int** target;
-int count = 1;
 void move (char, int, int, int, int, int);
 void clr(int, int);
 
@@ -291,10 +290,10 @@ void move (char a, int type, int m, int n, int refpt, int shift) {
         }
     }
     for (int j = 0; j < 4; j++) {    
-        target[position[j][0] + i + 1][position[j][1] + shift] = count;
+        target[position[j][0] + i + 1][position[j][1] + shift] = 1;
         
     }
-    count++;
+    
     return;
 }
 
