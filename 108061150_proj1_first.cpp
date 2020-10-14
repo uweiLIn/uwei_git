@@ -150,17 +150,20 @@ void line_check(int m, int n, int** &target) {
 void move(int shift, int m, int n, int refpt, int** &target, int** addmatrix) {
     for (int i = 0; i < m - 1; i++) {
         if ((target[i + 1][refpt - 1] || target[i + 1][refpt] || target[i + 1][refpt + 1] || 
-            target[i + 1][refpt + 2]) == 1) {
-                
+            target[i + 1][refpt + 2]) == 1) {           // exist bug here
+                   
+                for (int k = 0; k < 4; k++) {
+                    for (int j = 0; j < 4; j++) {
+                        target[i - 3 + k][refpt - 1 + j + shift] = addmatrix[k][j];
+                    }
+                }
             }
     }
-
-
 }
 
 int main(int argc, char* argv[]) {
     int refpt;
-    int shiftv;
+    int shift;
     char command[20];
     int m, n;
     ifstream infile(argv[1]);     
