@@ -3,6 +3,7 @@
 using namespace std;
 
 int** target;
+int count = 1;
 void move (char, int, int, int, int, int);
 void clr(int, int);
 
@@ -29,8 +30,15 @@ int main(int argc, char* argv[]) {
         }
     }
     infile >> firstlet;
+   
     while (firstlet != 'E') {                                                  
-        infile >> type >> refpt >> shift;       
+        if (firstlet == 'O'){
+            type = 0;
+            infile >> refpt >> shift;
+        } else {
+            infile >> type >> refpt >> shift;
+        }
+          
         move(firstlet, type, m, n, refpt, shift);
         clr(m, n);
         infile >> firstlet;
@@ -41,7 +49,7 @@ int main(int argc, char* argv[]) {
         }
         cout << endl;
     }
-
+    
    return 0;
 }
 
@@ -118,8 +126,8 @@ void move (char a, int type, int m, int n, int refpt, int shift) {
             position[1][1] = 0 + refpt;
             position[2][0] = 1;
             position[2][1] = 1 + refpt;
-            position[3][0] = 2;
-            position[3][1] = 1 + refpt;
+            position[3][0] = 1;
+            position[3][1] = 2 + refpt;
             height = 2;
             break;
         case 3: 
@@ -268,6 +276,7 @@ void move (char a, int type, int m, int n, int refpt, int shift) {
             break;
         }
     } else if (a == 'O') {
+        cout << "ref = " << refpt << endl;
         position[0][0] = 0;
         position[0][1] = 0 + refpt;
         position[1][0] = 0;
@@ -279,43 +288,65 @@ void move (char a, int type, int m, int n, int refpt, int shift) {
         height = 2;
     }
     flag = 1;
+
     for (i = m - height; i >= 0 && flag; ) { 
         for (int j = 0; j < 4; j++) {
+            if (target[position[j][0] + i][position[j][1]] != 0) {
+                flag = 0;            
+            }
+        }
+        if (flag == 1) {
+            i--;
+        }
+    }
+    for (int j = 0; j < 4; j++){
+        position[j][1] += shift;
+    }
+    flag = 1;
+    for (i = i; i >= 0 && flag; ) { 
+        for (int j = 0; j < 4; j++) {     
             if (target[position[j][0] + i][position[j][1]] != 0) {
                 flag = 0;
             }
         }
-        if (flag == 1){
+        if (flag == 1) {
             i--;
         }
-    }
-    for (int j = 0; j < 4; j++) {    
-        target[position[j][0] + i + 1][position[j][1] + shift] = 1;
-        
+     
     }
     
+    for (int j = 0; j < 4; j++) {    
+        target[position[j][0] + i + 1][position[j][1]] = 1; 
+    }
+    count++;
+    if (count > 9) count = 1;
     return;
 }
 
 void clr(int m, int n){
-    int flag = 1;
+    int full = 1;
+    int clean = 0;
 
-    for (int i = 0; i < m; i++){
-        flag = 1;
-        for (int j = 0; j < n; j++){
-            
-            if (target[i][j] == 0){
-                flag = 0;
-            }
-        }
-        if (flag == 1){
-            for (int k = i; k < m - 1; k++){
-                for (int l = 0; l < n; l++){
-                    target[k][l] = target[k + 1][l];
+    while (clean == 0){
+        clean = 1;
+        for (int i = 0; i < m; i++){
+            full = 1;
+            for (int j = 0; j < n; j++){
+                
+                if (target[i][j] == 0){
+                    full = 0;
                 }
             }
-            for (int l = 0; i < n; i++){
-                target[m - 1][l] = 0;
+            if (full == 1){
+                clean = 0;
+                for (int k = i; k < m - 1; k++){
+                    for (int l = 0; l < n; l++){
+                        target[k][l] = target[k + 1][l];
+                    }
+                }
+                for (int l = 0; i < n; i++){
+                    target[m - 1][l] = 0;
+                }
             }
         }
     }
