@@ -2,193 +2,323 @@
 #include <fstream>
 using namespace std;
 
-
-
-int** typeMatrix(char *a) {
-   int** sign;
-   for (int i = 0; i < 4; i++) {
-       for (int j  = 0; j < 4; j++) {
-           sign[i][j] = 0;
-       }
-   }
-   if (a[0] == 'T' && a[1] == 1) {
-       sign[2][0] = 1;
-       sign[2][1] = 1;
-       sign[2][2] = 1;
-       sign[3][1] = 1;
-   }
-   if (a[0] == 'T' && a[1] == 2) {
-       sign[2][0] = 1;
-       sign[2][1] = 1;
-       sign[1][1] = 1;
-       sign[3][1] = 1;
-   }
-   if (a[0] == 'T' && a[1] == 3) {
-       sign[3][0] = 1;
-       sign[2][1] = 1;
-       sign[3][2] = 1;
-       sign[3][1] = 1;
-   }
-   if (a[0] == 'T' && a[1] == 4) {
-       sign[1][0] = 1;
-       sign[2][0] = 1;
-       sign[2][1] = 1;
-       sign[3][0] = 1;
-   }
-   if (a[0] == 'L' && a[1] == 1) {
-       sign[1][0] = 1;
-       sign[2][0] = 1;
-       sign[3][0] = 1;
-       sign[3][1] = 1;
-   }
-   if (a[0] == 'L' && a[1] == 2) {
-       sign[2][0] = 1;
-       sign[2][1] = 1;
-       sign[2][2] = 1;
-       sign[3][0] = 1;
-   }
-   if (a[0] == 'L' && a[1] == 3) {
-       sign[1][0] = 1;
-       sign[1][1] = 1;
-       sign[2][1] = 1;
-       sign[3][1] = 1;
-   }
-   if (a[0] == 'L' && a[1] == 4) {
-       sign[3][0] = 1;
-       sign[3][1] = 1;
-       sign[2][2] = 1;
-       sign[3][2] = 1;
-   }
-   if (a[0] == 'J' && a[1] == 1) {
-       sign[1][1] = 1;
-       sign[2][1] = 1;
-       sign[3][0] = 1;
-       sign[3][1] = 1;
-   }
-   if (a[0] == 'J' && a[1] == 2) {
-       sign[2][0] = 1;
-       sign[2][1] = 1;
-       sign[3][0] = 1;
-       sign[3][2] = 1;
-   }
-   if (a[0] == 'J' && a[1] == 3) {
-       sign[1][0] = 1;
-       sign[1][1] = 1;
-       sign[2][0] = 1;
-       sign[3][0] = 1;
-   }
-   if (a[0] == 'J' && a[1] == 4) {
-       sign[2][0] = 1;
-       sign[2][1] = 1;
-       sign[2][2] = 1;
-       sign[3][2] = 1;
-   }
-   if (a[0] == 'I' && a[1] == 1) {
-       sign[0][0] = 1;
-       sign[1][0] = 1;
-       sign[2][0] = 1;
-       sign[3][0] = 1;
-   }
-   if (a[0] == 'I' && a[1] == 2) {
-       sign[3][0] = 1;
-       sign[3][1] = 1;
-       sign[3][2] = 1;
-       sign[3][3] = 1;
-   }
-   if (a[0] == 'S' && a[1] == 1) {
-       sign[3][0] = 1;
-       sign[2][1] = 1;
-       sign[2][2] = 1;
-       sign[3][1] = 1;
-   }
-   if (a[0] == 'S' && a[1] == 2) {
-       sign[1][0] = 1;
-       sign[2][0] = 1;
-       sign[3][0] = 1;
-       sign[3][1] = 1;
-   }
-   if (a[0] == 'Z' && a[1] == 1) {
-       sign[2][0] = 1;
-       sign[2][1] = 1;
-       sign[3][2] = 1;
-       sign[3][1] = 1;
-   }
-   if (a[0] == 'Z' && a[1] == 2) {
-       sign[2][0] = 1;
-       sign[1][1] = 1;
-       sign[2][1] = 1;
-       sign[3][0] = 1;
-   }
-   if (a[0] == 'O') {
-       sign[2][0] = 1;
-       sign[2][1] = 1;
-       sign[3][0] = 1;
-       sign[3][1] = 1;
-   }
-   return sign; // bug 
-}
-
-void line_check(int m, int n, int**& target) {
-    int rowsum;
-    int row, column;
-
-    row = 0;
-    while(row < m) {
-        rowsum = 0;
-        for (int j = 0; j < n; j++) {
-            if (target[row][j]) rowsum++;
-            if (rowsum == n) {
-                for (int j = 0; j < n; j++) {
-                    target[row][j] = 0;
-                }
-                for (int k = row; k >= 0; k--) {
-                    for (int j = 0; j < n; j++) {
-                        target[k][j] = target[k - 1][j]; 
-                    }
-                }
-            } 
-        }
-        row++;
-    }        
-}
-
-void move(int shift, int m, int n, int refpt, int** target, int** &addmatrix) {
-    for (int i = 0; i < m - 1; i++) {
-        if (( (target[i + 1][refpt - 1] && addmatrix[3][0])|| 
-            (target[i + 1][refpt] && addmatrix[3][1])|| 
-            (target[i + 1][refpt + 1] && addmatrix[3][2])|| 
-            (target[i + 1][refpt + 2] && addmatrix[3][3]) )== 1) {           // exist bug here. Dealing with when to stop.   
-                for (int k = 0; k < 4; k++) {
-                    for (int j = 0; j < 4; j++) {
-                        target[i - 3 + k][refpt - 1 + j + shift] = addmatrix[k][j];
-                    }
-                }
-        }  
-    }
-}
+int** target;
+int count = 1;
+void move (char, int, int, int, int, int);
+void clr(int, int);
 
 int main(int argc, char* argv[]) {
     int refpt;
     int shift;
-    char command[20];
+    int type;
     int m, n;
-    int** target;
+    
+    char firstlet;
     ifstream infile(argv[1]);     
     if (!infile) {
         cout << "Can not open file!\n";
         return 1;
     }
-    
-    while (condition) {                                                  // terminating condition.
-
-        for(int i = 0; command[i] != '\n' || i < 20; i++) {
-            command[i] = getchar();
+    infile >> m >> n;
+    target = (int **)malloc(m * sizeof(int *));
+    for (int i = 0; i < m; i++){
+        target[i] = (int *)malloc(n * sizeof(int));
+    }
+    for (int i = 0; i < m; i++){
+        for (int j = 0; j < n; j++){
+            target[i][j] = 0;
         }
-        int** addmatrix = typeMatrix(command);
-        move(shift, m, n, refpt, target, addmatrix);    //bug
-        line_check(m, n, target);
+    }
+    infile >> firstlet;
+    while (firstlet != 'E') {                                                  
+        infile >> type >> refpt >> shift;       
+        move(firstlet, type, m, n, refpt, shift);
+        clr(m, n);
+        infile >> firstlet;
+    }
+    for(int i = m -1; i >= 0; i--) {
+        for (int j = 0; j < n; j++) {
+            cout << target[i][j] <<' ';
+        }
+        cout << endl;
+    }
+
+   return 0;
+}
+
+void move (char a, int type, int m, int n, int refpt, int shift) {
+    
+    int i;
+    int position[4][2];
+    int height, flag;
+    refpt--;
+    if (a == 'T') {
+        switch (type) {
+        case 1: 
+            position[0][0] = 1;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 1;
+            position[1][1] = 1 + refpt;
+            position[2][0] = 0;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 1;
+            position[3][1] = 2 + refpt;
+            height = 2;
+            break;
+        case 2: 
+            position[0][0] = 0;
+            position[0][1] = 1 + refpt;
+            position[1][0] = 1;
+            position[1][1] = 1 + refpt;
+            position[2][0] = 2;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 1;
+            position[3][1] = 0 + refpt;
+            height = 3;
+            break;
+        case 3: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 0;
+            position[1][1] = 1 + refpt;
+            position[2][0] = 0;
+            position[2][1] = 2 + refpt;
+            position[3][0] = 1;
+            position[3][1] = 1 + refpt;
+            height = 2;
+            break;
+        case 4: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 1;
+            position[1][1] = 0 + refpt;
+            position[2][0] = 2;
+            position[2][1] = 0 + refpt;
+            position[3][0] = 1;
+            position[3][1] = 1 + refpt;
+            height = 3;
+            break;
+        }
+    } else if (a == 'L') {
+        switch (type) {
+        case 1: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 0;
+            position[1][1] = 1 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 0 + refpt;
+            position[3][0] = 2;
+            position[3][1] = 0 + refpt;
+            height = 3;
+            break;
+        case 2: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 1;
+            position[1][1] = 0 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 2;
+            position[3][1] = 1 + refpt;
+            height = 2;
+            break;
+        case 3: 
+            position[0][0] = 2;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 0;
+            position[1][1] = 1 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 2;
+            position[3][1] = 1 + refpt;
+            height = 3;
+            break;
+        case 4: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 0;
+            position[1][1] = 1 + refpt;
+            position[2][0] = 0;
+            position[2][1] = 2 + refpt;
+            position[3][0] = 1;
+            position[3][1] = 2 + refpt;
+            height = 2;
+            break;
+        }
+    } else if (a == 'J') {
+        switch (type) {
+        case 1: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 0;
+            position[1][1] = 1 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 2;
+            position[3][1] = 1 + refpt;
+            height = 3;
+            break;
+        case 2: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 1;
+            position[1][1] = 0 + refpt;
+            position[2][0] = 0;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 0;
+            position[3][1] = 2 + refpt;
+            height = 2;
+            break;
+        case 3: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 1;
+            position[1][1] = 0 + refpt;
+            position[2][0] = 2;
+            position[2][1] = 0 + refpt;
+            position[3][0] = 2;
+            position[3][1] = 1 + refpt;
+            height = 3;
+            break;
+        case 4: 
+            position[0][0] = 0;
+            position[0][1] = 2 + refpt;
+            position[1][0] = 1;
+            position[1][1] = 0 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 1;
+            position[3][1] = 2 + refpt;
+            height = 2;
+            break;
+        }
+    } else if (a == 'S') {
+        switch (type) {
+        case 1: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 0;
+            position[1][1] = 1 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 1;
+            position[3][1] = 2 + refpt;
+            height = 2;
+            break;
+        case 2: 
+            position[0][0] = 0;
+            position[0][1] = 1 + refpt;
+            position[1][0] = 1;
+            position[1][1] = 0 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 2;
+            position[3][1] = 0 + refpt;
+            height = 3;
+            break;
+        }
+    } else if (a == 'Z') {
+        switch (type) {
+        case 1: 
+            position[0][0] = 0;
+            position[0][1] = 1 + refpt;
+            position[1][0] = 0;
+            position[1][1] = 2 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 0 + refpt;
+            position[3][0] = 1;
+            position[3][1] = 1 + refpt;
+            height = 2;
+            break;
+        case 2: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 1;
+            position[1][1] = 0 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 1 + refpt;
+            position[3][0] = 2;
+            position[3][1] = 1 + refpt;
+            height = 3;
+            break;
+        }
+    } else if (a == 'I') {
+        switch (type) {
+        case 1: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 2;
+            position[1][1] = 0 + refpt;
+            position[2][0] = 1;
+            position[2][1] = 0 + refpt;
+            position[3][0] = 3;
+            position[3][1] = 0 + refpt;
+            height = 4;
+            break;
+        case 2: 
+            position[0][0] = 0;
+            position[0][1] = 0 + refpt;
+            position[1][0] = 0;
+            position[1][1] = 1 + refpt;
+            position[2][0] = 0;
+            position[2][1] = 2 + refpt;
+            position[3][0] = 0;
+            position[3][1] = 3 + refpt;
+            height = 1;
+            break;
+        }
+    } else if (a == 'O') {
+        position[0][0] = 0;
+        position[0][1] = 0 + refpt;
+        position[1][0] = 0;
+        position[1][1] = 1 + refpt;
+        position[2][0] = 1;
+        position[2][1] = 0 + refpt;
+        position[3][0] = 1;
+        position[3][1] = 1 + refpt;
+        height = 2;
+    }
+    flag = 1;
+    for (i = m - height; i >= 0 && flag; ) { 
+        for (int j = 0; j < 4; j++) {
+            if (target[position[j][0] + i][position[j][1]] != 0) {
+                flag = 0;
+            }
+        }
+        if (flag == 1){
+            i--;
+        }
+    }
+    for (int j = 0; j < 4; j++) {    
+        target[position[j][0] + i + 1][position[j][1] + shift] = count;
         
     }
-  
-   return 0;
+    count++;
+    return;
+}
+
+void clr(int m, int n){
+    int flag = 1;
+
+    for (int i = 0; i < m; i++){
+        flag = 1;
+        for (int j = 0; j < n; j++){
+            
+            if (target[i][j] == 0){
+                flag = 0;
+            }
+        }
+        if (flag == 1){
+            for (int k = i; k < m - 1; k++){
+                for (int l = 0; l < n; l++){
+                    target[k][l] = target[k + 1][l];
+                }
+            }
+            for (int l = 0; i < n; i++){
+                target[m - 1][l] = 0;
+            }
+        }
+    }
+    return;
 }
