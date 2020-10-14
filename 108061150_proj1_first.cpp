@@ -5,7 +5,12 @@ using namespace std;
 
 
 int** typeMatrix(char *a) {
-   int sign[4][4] = {0};
+   int** sign;
+   for (int i = 0; i < 4; i++) {
+       for (int j  = 0; j < 4; j++) {
+           sign[i][j] = 0;
+       }
+   }
    if (a[0] == 'T' && a[1] == 1) {
        sign[2][0] = 1;
        sign[2][1] = 1;
@@ -120,10 +125,10 @@ int** typeMatrix(char *a) {
        sign[3][0] = 1;
        sign[3][1] = 1;
    }
-   return &sign; // bug 
+   return sign; // bug 
 }
 
-void line_check(int m, int n, int** &target) {
+void line_check(int m, int n, int**& target) {
     int rowsum;
     int row, column;
 
@@ -147,20 +152,18 @@ void line_check(int m, int n, int** &target) {
     }        
 }
 
-void move(int shift, int m, int n, int refpt, int** &target, int** addmatrix) {
+void move(int shift, int m, int n, int refpt, int** target, int** &addmatrix) {
     for (int i = 0; i < m - 1; i++) {
         if (( (target[i + 1][refpt - 1] && addmatrix[3][0])|| 
             (target[i + 1][refpt] && addmatrix[3][1])|| 
             (target[i + 1][refpt + 1] && addmatrix[3][2])|| 
-            (target[i + 1][refpt + 2] && addmatrix[3][3]) )== 1) {           // exist bug here. Dealing with when to stop.
-                   
+            (target[i + 1][refpt + 2] && addmatrix[3][3]) )== 1) {           // exist bug here. Dealing with when to stop.   
                 for (int k = 0; k < 4; k++) {
                     for (int j = 0; j < 4; j++) {
                         target[i - 3 + k][refpt - 1 + j + shift] = addmatrix[k][j];
                     }
                 }
-            }
-        
+        }  
     }
 }
 
@@ -169,18 +172,21 @@ int main(int argc, char* argv[]) {
     int shift;
     char command[20];
     int m, n;
+    int** target;
     ifstream infile(argv[1]);     
     if (!infile) {
         cout << "Can not open file!\n";
         return 1;
     }
     
-    while () {
+    while (condition) {                                                  // terminating condition.
+
         for(int i = 0; command[i] != '\n' || i < 20; i++) {
             command[i] = getchar();
         }
-        typeMatrix(command);
-
+        int** addmatrix = typeMatrix(command);
+        move(shift, m, n, refpt, target, addmatrix);    //bug
+        line_check(m, n, target);
         
     }
   
