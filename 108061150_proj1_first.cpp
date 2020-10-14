@@ -276,7 +276,6 @@ void move (char a, int type, int m, int n, int refpt, int shift) {
             break;
         }
     } else if (a == 'O') {
-        cout << "ref = " << refpt << endl;
         position[0][0] = 0;
         position[0][1] = 0 + refpt;
         position[1][0] = 0;
