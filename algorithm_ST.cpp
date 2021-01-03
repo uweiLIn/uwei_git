@@ -25,26 +25,27 @@ using namespace std;
  * 4. The function that print out the current board statement
 *************************************************************************/
 
-#define WIN_GAME 100000000
-#define LOSE_GAME -100000000
-#define ENEMY_WIN_GAME 200000000
+#define victory 100000000
+#define DEFEAT -100000000
+#define OPPONENT_WINS 200000000
 #define ILLEGAL -200000000
 #define failgame -500000000
 #define WIN 1
-#define LOSE 2
-#define continue 3
+#define LOSE -1
+#define continue 2
 #define CORNER 1
 #define EDGE 2
 #define MY true
-#define ENEMY false
+#define OPPONENT false
 
 
 int weightedcount(int row, int col, Board board, Player player);
 int run_game(Board board, Player player);
 int critical_cells(int row, int col, Board board, char player);
 int cell_classify(int row, int col);
-int critical_cells_linked(bool record[][COL], int row, int col, Board board, char player);
+int critical_cells_linked(int row, int col, Board board, char player, bool record[][COL]);
 int minimax(int row, int col, Board board, Player player, Player enemy, bool turn, int depth,int MAX_depth, int a, int b);
+int critical_condition(Board board, int row, int col);
     
 
 void algorithm_A(Board board, Player player, int index[])
@@ -64,7 +65,7 @@ void algorithm_A(Board board, Player player, int index[])
         for (int j = 0; j < COL; j++)
         {
             int new_score;
-            if (score < (new_score = minimax(i, j, board, player, enemy, ENEMY, 0, 2, a, b)) && new_score != failgame)
+            if (score < (new_score = minimax(i, j, board, player, enemy, OPPONENT, 0, 2, a, b)) && new_score != failgame)
             {
                     score = new_score;
                     index[0] = i;
@@ -91,16 +92,13 @@ int minimax(int row, int col, Board board, Player player, Player enemy, bool tur
     {
         if (place_legal(row, col, board, enemy))   board.place_orb(row, col, &enemy);
         else return failgame;
-        if (run_game(board, player) == WIN)  return WIN_GAME;
-        else if (run_game(board, player) == LOSE)  return LOSE_GAME;
+        if (run_game(board, player) == WIN)  return victory;
+        else if (run_game(board, player) == LOSE)  return DEFEAT;
         for (int i = 0; i < ROW; i++)
             for (int j = 0; j < COL; j++)
             {
                 int new_score;
-                if (score < (new_score = weightedcount(i, j, board, player)))
-                {
-                    score = new_score;
-                }
+                if (score < (new_score = weightedcount(i, j, board, player)))  score = new_score;   
             }
         return score;
     }
@@ -109,30 +107,27 @@ int minimax(int row, int col, Board board, Player player, Player enemy, bool tur
         if (place_legal(row, col, board, enemy))   board.place_orb(row, col, &enemy);
         else return failgame;
 
-        if (run_game(board, player) == WIN)  return WIN_GAME;
-        else if (run_game(board, player) == LOSE)  return LOSE_GAME;
+        if (run_game(board, player) == WIN)  return victory;
+        else if (run_game(board, player) == LOSE)  return DEFEAT;
 
         for (int i = 0; i < ROW; i++)
             for (int j = 0; j < COL; j++)
             {
                 int new_score = minimax(i, j, board, player, enemy, !turn, depth + 1, MAX_depth, a, b);
-                if (score < new_score && new_score != failgame)
-                {
-                    score = new_score;
-                }
+                if (score < new_score && new_score != failgame) score = new_score;
                 if (a < new_score)  a = new_score;
                 if (b <= a)  return score;
             }
         return score;
     
     }
-    if (turn == ENEMY)
+    if (turn == OPPONENT)
     {
         if (place_legal(row, col, board, player))   board.place_orb(row, col, &player);
         else return failgame;
-         if (run_game(board, player) == WIN)  return WIN_GAME;
-        else if (run_game(board, player) == LOSE)  return LOSE_GAME;
-        score = ENEMY_WIN_GAME;
+        if (run_game(board, player) == WIN)  return victory;
+        else if (run_game(board, player) == LOSE)  return DEFEAT;
+        score = OPPONENT_WINS;
         for (int i = 0; i < ROW; i++)
             for (int j = 0; j < COL; j++)
             {
@@ -154,13 +149,18 @@ int weightedcount(int row, int col, Board board, Player player)
 {
     int score = 0;
     char player_color = player.get_color();
-    bool record[ROW][COL] = {false};
-
-    if (board.get_cell_color(row, col) != player_color && board.get_cell_color(row, col) != 'w') return ILLEGAL;
-    board.place_orb(row, col, &player);
+    char enemy_color;
+    bool record[ROW][COL] = {0};
     int result = run_game(board, player);
-    if (result == WIN) score += WIN_GAME;
-    else if (result == LOSE) score += LOSE_GAME;
+    if (player_color == RED)   enemy_color = BLUE;
+    else enemy_color = RED;
+    
+    if (board.get_cell_color(row, col) == enemy_color) return ILLEGAL;
+    board.place_orb(row, col, &player);
+    
+    
+    if (result == WIN) score += victory;
+    else if (result == LOSE) score += DEFEAT;
 
     for (int i = 0; i < ROW; i++)
         for (int j = 0; j < COL; j++)
@@ -176,16 +176,14 @@ int weightedcount(int row, int col, Board board, Player player)
                     if (cell_classify(i, j) == CORNER) score += 3;
                     else if (cell_classify(i, j) == EDGE) score += 2;
                     
-                    if (board.get_capacity(i, j) - 1 == board.get_orbs_num(i, j))
+                    if (critical_condition(board, i, j))
                         score += 2;
                 }
-                else if (board.get_capacity(i, j) - 1 == board.get_orbs_num(i, j))
+                else if (critical_condition(board, i, j))
                 {
-                    score += critical_cells_linked(record, i, j, board, player_color);
-                }
-                    
-            }
-                
+                    score += critical_cells_linked(i, j, board, player_color, record);
+                }                 
+            }      
         }
 
     return score;
@@ -195,55 +193,59 @@ int run_game(Board board, Player player)
 {
     char player_color = player.get_color();
     int me = 0;
-    int enemy = 0;
+    int opoponent = 0;
 
     for(int i = 0; i < ROW; i++){
         for(int j = 0; j < COL; j++){
             if(board.get_cell_color(i,j) == player_color) me++;
-            else if (board.get_cell_color(i,j) != 'w') enemy++;
+            else if (board.get_cell_color(i,j) != 'w') opoponent++;
         }
     }
-    if (enemy == 0 && me != 0) return WIN;
-    if (enemy != 0 && me == 0) return LOSE;
+    if (opoponent == 0 && me != 0) return WIN;
+    if (opoponent != 0 && me == 0) return LOSE;
     return continue; 
 }
 
 int critical_cells(int row, int col, Board board, char player)
 {
     int score = 0;
+    char enemy_color;
+    char player_color = player;
+    
+    if (player_color == RED)   enemy_color = BLUE;
+    else enemy_color = RED;
     
     if (row > 0)    
-        if (board.get_cell_color(row - 1, col) != player && board.get_cell_color(row - 1, col) != 'w')
-            if (board.get_orbs_num(row - 1, col) == board.get_capacity(row - 1, col) - 1)
+        if (board.get_cell_color(row - 1, col) == enemy_color)
+            if (critical_condition(board, row - 1, col))
                 score += board.get_capacity(row - 1, col) - 5;
                             
     if (col > 0)    
-        if (board.get_cell_color(row, col - 1) != player && board.get_cell_color(row, col - 1) != 'w')
-            if (board.get_orbs_num(row, col - 1) == board.get_capacity(row, col - 1) - 1)
+        if (board.get_cell_color(row, col - 1) == enemy_color)
+            if (critical_condition(board, row, col - 1))
 
                 score += board.get_capacity(row, col - 1) - 5;
     if (row < ROW - 1)   
-        if (board.get_cell_color(row + 1, col) != player && board.get_cell_color(row + 1, col) != 'w')
-            if (board.get_orbs_num(row + 1, col) == board.get_capacity(row + 1, col) - 1)
+        if (board.get_cell_color(row + 1, col) == enemy_color)
+            if (critical_condition(board, row + 1, col))
                 score += board.get_capacity(row + 1, col) - 5;        
 
     if (col < COL - 1) 
-        if (board.get_cell_color(row, col + 1) != player && board.get_cell_color(row, col + 1) != 'w')
-            if (board.get_orbs_num(row, col + 1) == board.get_capacity(row, col + 1) - 1)
+        if (board.get_cell_color(row, col + 1) == enemy_color)
+            if (critical_condition(board, row, col + 1))
                 score += board.get_capacity(row, col + 1) - 5;  
 
     return score;
 }
 
 
-int critical_cells_linked(bool record[][COL], int row, int col, Board board, char player)
+int critical_cells_linked(int row, int col, Board board, char player, bool record[][COL])
 {
     int number = 0;
-    
-                            
+                             
     if (row > 0)    
         if (board.get_cell_color(row - 1, col) == player)
-            if (board.get_orbs_num(row - 1, col) == board.get_capacity(row - 1, col) - 1 && !record[row - 1][col])
+            if (critical_condition(board, row - 1, col) && !record[row - 1][col])
             {
                 number++;
                 record[row - 1][col] = 1;
@@ -251,14 +253,14 @@ int critical_cells_linked(bool record[][COL], int row, int col, Board board, cha
                          
     if (col > 0)    
         if (board.get_cell_color(row, col - 1) == player)
-            if (board.get_orbs_num(row, col - 1) == board.get_capacity(row, col - 1) - 1 && !record[row][col - 1])
+            if (critical_condition(board, row, col - 1) && !record[row][col - 1])
             {
                 number++;
                 record[row][col - 1] = 1;
             }
     if (row < ROW - 1)    
         if (board.get_cell_color(row + 1, col) == player)
-            if (board.get_orbs_num(row + 1, col) == board.get_capacity(row + 1, col) - 1 && !record[row + 1][col])
+            if (critical_condition(board, row + 1, col) && !record[row + 1][col])
             {
                 number++;
                 record[row + 1][col] = 1;
@@ -266,7 +268,7 @@ int critical_cells_linked(bool record[][COL], int row, int col, Board board, cha
                                       
     if (col < COL - 1) 
         if (board.get_cell_color(row, col + 1) == player)
-            if (board.get_orbs_num(row, col + 1) == board.get_capacity(row, col + 1) - 1 && !record[row][col + 1])
+            if (critical_condition(board, row, col + 1) && !record[row][col + 1])
             {
                 number++;
                 record[row][col + 1] = 1;
@@ -279,13 +281,14 @@ int cell_classify(int row, int col)
 {
     if (row == 0 || col == 0 || row == ROW - 1 || col == COL - 1)
     {
-        if (row == 0 && col == 0 || row == 0 && col == COL - 1 || 
-        row == ROW - 1 && col == 0 || row == ROW - 1 && col == COL - 1)     
+        if (row == 0 && col == 0 || row == 0 && col == COL - 1 || row == ROW - 1 && col == 0 || row == ROW - 1 && col == COL - 1)     
             return CORNER;
         else return EDGE;           
     }
     return 0;
 }
 
-
-
+int critical_condition(Board board, int row, int col) {
+    if (board.get_orbs_num(row, col) == board.get_capacity(row, col) - 1) return true;
+    else return false;
+}
